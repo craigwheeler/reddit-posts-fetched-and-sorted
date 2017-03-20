@@ -1,0 +1,58 @@
+var Reddit = React.createClass({
+
+  // sets the initial state of the data
+  getInitialState() {
+    return {
+      posts: []
+    };
+  },
+  
+  // fetch data on page load
+  componentWillMount() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://api.reddit.com/');
+    xhr.addEventListener('readystatechange', this.onReadyStateChange);
+    xhr.send();
+  },
+   // verify response
+  onReadyStateChange(e) {
+    var xhr = e.target;
+    if (xhr.readyState == 4) {
+      var res = JSON.parse(xhr.responseText);
+      this.setState({
+        posts: res.data.children
+      });
+    }
+  },
+  
+  // sort data based on upvotes
+  sortPosts () {
+     this.setState(this.state.posts.sort(function (a, b) {
+        return b.data.ups - a.data.ups;
+     }));
+  },
+   
+  // renders component to virtual DOM
+  render() {
+    return (
+        <section>
+          <h3>Posts fetched using API and sorted in descending order by upvotes</h3>
+          <ol>
+            {this.sortPosts()}
+            {this.state.posts.map(function (post) {
+              return <li><span>Upvotes:</span> {post.data.ups}
+                <br/><span>Author:</span> {post.data.author}
+                <br/><span>Title:</span> {post.data.title}
+                <br/><span>URL:</span> {post.data.url}
+                <br/><span>Permalink:</span> {post.data.permalink}
+                <hr/>
+              </li>
+            })}
+          </ol>
+        </section>
+    );
+  }
+});
+
+// displays component to the DOM
+ReactDOM.render(<Reddit/>, document.getElementById('app'));
